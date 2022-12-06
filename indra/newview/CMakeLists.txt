@@ -146,6 +146,7 @@ set(viewer_SOURCE_FILES
     lladdgridhandler.cpp
     llaisapi.cpp
     llagent.cpp
+    llagenthandler.cpp
     llagentaccess.cpp
     llagentbenefits.cpp
     llagentcamera.cpp

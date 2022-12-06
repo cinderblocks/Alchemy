@@ -60,7 +60,6 @@
 #include "llfloaterimcontainer.h"
 #include "llimview.h"			// for gIMMgr
 #include "llmutelist.h"
-#include "llnotificationsutil.h"	// for LLNotificationsUtil
 #include "llpaneloutfitedit.h"
 #include "llpanelprofile.h"
 #include "llrecentpeople.h"
@@ -68,7 +67,6 @@
 #include "llviewercontrol.h"
 #include "llviewerobjectlist.h"
 #include "llviewermessage.h"	// for handle_lure
-#include "llviewernetwork.h" //LLGridManager
 #include "llviewerregion.h"
 #include "lltrans.h"
 #include "llcallingcard.h"
@@ -87,20 +85,6 @@ const U32 KICK_FLAGS_DEFAULT	= 0x0;
 const U32 KICK_FLAGS_FREEZE		= 1 << 0;
 const U32 KICK_FLAGS_UNFREEZE	= 1 << 1;
 #endif
-
-
-std::string getProfileURL(const std::string& agent_name, bool feed_only)
-{
-    std::string url = "[WEB_PROFILE_URL][AGENT_NAME][FEED_ONLY]";
-	LLSD subs;
-	subs["WEB_PROFILE_URL"] = LLGridManager::getInstance()->getWebProfileURL();
-	subs["AGENT_NAME"] = agent_name;
-    subs["FEED_ONLY"] = feed_only ? "/?feed_only=true" : "";
-	url = LLWeb::expandURLSubstitutions(url, subs);
-	LLStringUtil::toLower(url);
-	return url;
-}
-
 
 // static
 void LLAvatarActions::requestFriendshipDialog(const LLUUID& id, const std::string& name)

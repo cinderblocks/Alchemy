@@ -1193,10 +1193,8 @@ void LLViewerMedia::setOpenIDCookie(const std::string& url)
 {
 	if(!mOpenIDCookie.empty())
 	{
-        std::string profileUrl = getProfileURL("");
-
-        LLCoros::instance().launch("LLViewerMedia::getOpenIDCookieCoro",
-            boost::bind(&LLViewerMedia::getOpenIDCookieCoro, profileUrl));
+        LLCoros::instance().launch("LLViewerMedia::getOpenIDCookieCoro", 
+			boost::bind(&LLViewerMedia::getOpenIDCookieCoro, LLGridManager::getInstance()->getWebProfileURL()));
 	}
 }
 

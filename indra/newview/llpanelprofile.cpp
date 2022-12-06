@@ -65,6 +65,7 @@
 #include "lltrans.h"
 #include "llviewercontrol.h"
 #include "llviewermenu.h" //is_agent_mappable
+#include "llviewernetwork.h"
 #include "llvoiceclient.h"
 #include "llweb.h"
 #include "rlvhandler.h"
@@ -86,6 +87,17 @@ static const std::string PANEL_CLASSIFIEDS  = "panel_profile_classifieds";
 static const std::string PANEL_FIRSTLIFE    = "panel_profile_firstlife";
 static const std::string PANEL_NOTES        = "panel_profile_notes";
 
+static std::string getProfileURL(const std::string& agent_name, bool feed_only = false)
+{
+    std::string url = "[WEB_PROFILE_URL][AGENT_NAME][FEED_ONLY]";
+    LLSD        subs;
+    subs["WEB_PROFILE_URL"] = LLGridManager::getInstance()->getWebProfileURL();
+    subs["AGENT_NAME"]      = agent_name;
+    subs["FEED_ONLY"]       = feed_only ? "/?feed_only=true" : "";
+    url                     = LLWeb::expandURLSubstitutions(url, subs);
+    LLStringUtil::toLower(url);
+    return url;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // LLProfileHandler
@@ -223,8 +235,6 @@ public:
 	}
 };
 LLAgentHandler gAgentHandler;
-
-
 
 //////////////////////////////////////////////////////////////////////////
 // LLPanelProfileSecondLife

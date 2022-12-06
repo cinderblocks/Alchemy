@@ -42,6 +42,7 @@
 #include "llcorehttputil.h"
 
 #include "bufferstream.h"
+#include "llviewernetwork.h"
 
 /*
  * Workflow:
@@ -117,7 +118,7 @@ void LLWebProfile::uploadImageCoro(LLPointer<LLImageFormatted> image, std::strin
     httpOpts->setSSLVerifyPeer(false); ; // viewer's cert bundle doesn't appear to agree with web certs from "https://my.secondlife.com/"
 
     // Get upload configuration data.
-    std::string configUrl(getProfileURL(std::string()) + "snapshots/s3_upload_config");
+    std::string configUrl(LLGridManager::getInstance()->getWebProfileURL() + "snapshots/s3_upload_config");
     configUrl += "?caption=" + LLURI::escape(caption);
     configUrl += "&add_loc=" + std::string(addLocation ? "1" : "0");
 

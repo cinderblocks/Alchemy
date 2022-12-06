@@ -44,6 +44,8 @@ class LLPanelClassifiedInfo : public LLPanel, public LLAvatarPropertiesObserver
 	LOG_CLASS(LLPanelClassifiedInfo);
 public:
 
+	static LLPanelClassifiedInfo* create();
+
 	LLPanelClassifiedInfo();
 	virtual ~LLPanelClassifiedInfo();
 
@@ -112,8 +114,9 @@ public:
 			const LLVector3d& global_pos,
 			const std::string& sim_name);
 
+	void setExitCallback(const commit_callback_t& cb);
+	void setEditClassifiedCallback(const commit_callback_t& cb);
 	/*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
-
 	/*virtual*/ void draw();
 
 protected:
@@ -136,6 +139,7 @@ protected:
 
 	void onMapClick();
 	void onTeleportClick();
+	void onExit();
 
 	bool mSnapshotStreched;
 	LLRect mSnapshotRect;

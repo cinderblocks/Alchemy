@@ -48,6 +48,8 @@ const U8 CLASSIFIED_QUERY_INC_NEW_VIEWER	= (CLASSIFIED_QUERY_INC_PG | CLASSIFIED
 
 const S32 MAX_CLASSIFIEDS = 100;
 
+const S32 MINIMUM_PRICE_FOR_CLASSIFIED_LISTING = 50; // L$
+
 // This function is used in AO viewers to pack old query flags into the request 
 // so that they can talk to old dataservers properly. When the AO servers are deployed on agni
 // we can revert back to ClassifiedFlags pack_classified_flags and get rider of this one.

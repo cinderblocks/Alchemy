@@ -186,6 +186,7 @@ set(viewer_SOURCE_FILES
     llchiclet.cpp
     llchicletbar.cpp
     llclassifiedinfo.cpp
+    llclassifieditem.cpp
     llcofwearables.cpp
     llcolorswatch.cpp
     llcommanddispatcherlistener.cpp
@@ -344,6 +345,7 @@ set(viewer_SOURCE_FILES
     llfloaterpreviewtrash.cpp
     llfloaterprogressview.cpp
     llfloaterproperties.cpp
+    llfloaterpublishclassified.cpp
     llfloaterregiondebugconsole.cpp
     llfloaterregioninfo.cpp
     llfloaterreporter.cpp
@@ -489,6 +491,7 @@ set(viewer_SOURCE_FILES
     llpanelavatartag.cpp
     llpanelblockedlist.cpp
     llpanelclassified.cpp
+    llpanelclassifiededit.cpp
     llpanelcontents.cpp
     llpaneleditsky.cpp
     llpaneleditwater.cpp
@@ -543,8 +546,9 @@ set(viewer_SOURCE_FILES
     llpanelpresetspulldown.cpp
     llpanelprimmediacontrols.cpp
     llpanelprofile.cpp
-    llpanelprofilelegacy.cpp
     llpanelprofileclassifieds.cpp
+    llpanelprofilelegacy.cpp
+    llpanelprofilelegacypicks.cpp
     llpanelprofilepicks.cpp
     llpanelsearchbase.cpp
     llpanelsearchclassifieds.cpp
@@ -586,6 +590,7 @@ set(viewer_SOURCE_FILES
     llpersistentnotificationstorage.cpp
     llphysicsmotion.cpp
     llphysicsshapebuilderutil.cpp
+    llpickitem.cpp
     llpipelinelistener.cpp
     llplacesinventorybridge.cpp
     llplacesinventorypanel.cpp
@@ -890,6 +895,7 @@ set(viewer_HEADER_FILES
     llchiclet.h
     llchicletbar.h
     llclassifiedinfo.h
+    llclassifieditem.h
     llcofwearables.h
     llcolorswatch.h
     llcommanddispatcherlistener.h
@@ -1051,6 +1057,7 @@ set(viewer_HEADER_FILES
     llfloaterpreviewtrash.h
     llfloaterprogressview.h
     llfloaterproperties.h
+    llfloaterpublishclassified.h
     llfloaterregiondebugconsole.h
     llfloaterregioninfo.h
     llfloaterreporter.h
@@ -1185,6 +1192,7 @@ set(viewer_HEADER_FILES
     llpanelavatartag.h
     llpanelblockedlist.h
     llpanelclassified.h
+    llpanelclassifiededit.h
     llpanelcontents.h
     llpaneleditsky.h
     llpaneleditwater.h
@@ -1240,8 +1248,9 @@ set(viewer_HEADER_FILES
     llpanelpresetspulldown.h
     llpanelprimmediacontrols.h
     llpanelprofile.h
-    llpanelprofilelegacy.h
     llpanelprofileclassifieds.h
+    llpanelprofilelegacy.h
+    llpanelprofilelegacypicks.h
     llpanelprofilepicks.h
     llpanelsearchbase.h
     llpanelsearchclassifieds.h
@@ -1278,6 +1287,7 @@ set(viewer_HEADER_FILES
     llpersistentnotificationstorage.h
     llphysicsmotion.h
     llphysicsshapebuilderutil.h
+    llpickitem.h
     llpipelinelistener.h
     llplacesinventorybridge.h
     llplacesinventorypanel.h

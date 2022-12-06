@@ -31,10 +31,7 @@
 #include "llagent.h"
 #include "llagentbenefits.h"
 #include "llagentpicksinfo.h"
-#include "llavataractions.h"
 #include "llavatarpropertiesprocessor.h"
-#include "llcommandhandler.h"
-#include "lldispatcher.h"
 #include "llfloaterreg.h"
 #include "llfloaterworldmap.h"
 #include "lllineeditor.h"
@@ -42,14 +39,10 @@
 #include "llpanelavatar.h"
 #include "llpanelprofile.h"
 #include "llparcel.h"
-#include "llstartup.h"
 #include "lltabcontainer.h"
-#include "lltextbox.h"
 #include "lltexteditor.h"
 #include "lltexturectrl.h"
-#include "lltexturectrl.h"
 #include "lltrans.h"
-#include "llviewergenericmessage.h" // send_generic_message
 #include "llviewerparcelmgr.h"
 #include "llviewerregion.h"
 #include "rlvactions.h"
@@ -57,65 +50,6 @@
 
 static LLPanelInjector<LLPanelProfilePicks> t_panel_profile_picks("panel_profile_picks");
 static LLPanelInjector<LLPanelProfilePick> t_panel_profile_pick("panel_profile_pick");
-
-
-class LLPickHandler : public LLCommandHandler
-{
-public:
-
-    // requires trusted browser to trigger
-    LLPickHandler() : LLCommandHandler("pick", UNTRUSTED_THROTTLE) { }
-
-    bool handle(const LLSD& params, const LLSD& query_map,
-        LLMediaCtrl* web)
-    {
-        if (LLStartUp::getStartupState() < STATE_STARTED)
-        {
-            return true;
-        }
-
-        if (!LLUI::getInstanceFast()->mSettingGroups["config"]->getBOOL("EnablePicks"))
-        {
-            LLNotificationsUtil::add("NoPicks", LLSD(), LLSD(), std::string("SwitchToStandardSkinAndQuit"));
-            return true;
-        }
-
-        // handle app/classified/create urls first
-        if (params.size() == 1 && params[0].asString() == "create")
-        {
-            LLAvatarActions::showPicks(gAgent.getID());
-            return true;
-        }
-
-        // then handle the general app/pick/{UUID}/{CMD} urls
-        if (params.size() < 2)
-        {
-            return false;
-        }
-
-        // get the ID for the pick_id
-        LLUUID pick_id;
-        if (!pick_id.set(params[0].asStringRef(), FALSE))
-        {
-            return false;
-        }
-
-        // edit the pick in the side tray.
-        // need to ask the server for more info first though...
-        const std::string verb = params[1].asString();
-        if (verb == "edit")
-        {
-            LLAvatarActions::showPick(gAgent.getID(), pick_id);
-            return true;
-        }
-        else
-        {
-            LL_WARNS() << "unknown verb " << verb << LL_ENDL;
-            return false;
-        }
-    }
-};
-LLPickHandler gPickHandler;
 
 
 //-----------------------------------------------------------------------------

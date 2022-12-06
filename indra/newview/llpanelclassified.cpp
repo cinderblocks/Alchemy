@@ -2,9 +2,9 @@
  * @file llpanelclassified.cpp
  * @brief LLPanelClassifiedInfo class implementation
  *
- * $LicenseInfo:firstyear=2021&license=viewerlgpl$
+ * $LicenseInfo:firstyear=2005&license=viewerlgpl$
  * Second Life Viewer Source Code
- * Copyright (C) 2021, Linden Research, Inc.
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,17 +34,24 @@
 
 #include "lldispatcher.h"
 #include "llfloaterreg.h"
-#include "llparcel.h"
+#include "llnotifications.h"
+#include "llnotificationsutil.h"
 
 #include "llagent.h"
 #include "llclassifiedflags.h"
 #include "lliconctrl.h"
+#include "lllineeditor.h"
+#include "llcombobox.h"
+#include "lllogininstance.h"
 #include "lltexturectrl.h"
+#include "llviewerparcelmgr.h"
 #include "llfloaterworldmap.h"
 #include "llviewergenericmessage.h"	// send_generic_message
 #include "llviewerregion.h"
+#include "llviewertexture.h"
 #include "llscrollcontainer.h"
 #include "llcorehttputil.h"
+
 
 //static
 LLPanelClassifiedInfo::panel_list_t LLPanelClassifiedInfo::sAllPanels;
@@ -55,7 +62,7 @@ static LLPanelInjector<LLPanelClassifiedInfo> t_panel_classified_info("panel_cla
 // strings[1] = teleport_clicks
 // strings[2] = map_clicks
 // strings[3] = profile_clicks
-class LLDispatchClassifiedClickThrough : public LLDispatchHandler
+class LLDispatchClassifiedClickThrough final : public LLDispatchHandler
 {
 public:
 	virtual bool operator()(
@@ -66,9 +73,9 @@ public:
 	{
 		if (strings.size() != 4) return false;
 		LLUUID classified_id(strings[0]);
-		S32 teleport_clicks = atoi(strings[1].c_str());
-		S32 map_clicks = atoi(strings[2].c_str());
-		S32 profile_clicks = atoi(strings[3].c_str());
+		S32 teleport_clicks = std::stoi(strings[1]);
+		S32 map_clicks = std::stoi(strings[2]);
+		S32 profile_clicks = std::stoi(strings[3]);
 
 		LLPanelClassifiedInfo::setClickThrough(
 			classified_id, teleport_clicks, map_clicks, profile_clicks, false);
@@ -106,8 +113,17 @@ LLPanelClassifiedInfo::~LLPanelClassifiedInfo()
 	sAllPanels.remove(this);
 }
 
+// static
+LLPanelClassifiedInfo* LLPanelClassifiedInfo::create()
+{
+	LLPanelClassifiedInfo* panel = new LLPanelClassifiedInfo();
+	panel->buildFromFile("panel_classified_info.xml");
+	return panel;
+}
+
 BOOL LLPanelClassifiedInfo::postBuild()
 {
+	childSetAction("back_btn", boost::bind(&LLPanelClassifiedInfo::onExit, this));
 	childSetAction("show_on_map_btn", boost::bind(&LLPanelClassifiedInfo::onMapClick, this));
 	childSetAction("teleport_btn", boost::bind(&LLPanelClassifiedInfo::onTeleportClick, this));
 
@@ -121,6 +137,16 @@ BOOL LLPanelClassifiedInfo::postBuild()
 	mSnapshotRect = getDefaultSnapshotRect();
 
 	return TRUE;
+}
+
+void LLPanelClassifiedInfo::setExitCallback(const commit_callback_t& cb)
+{
+	getChild<LLButton>("back_btn")->setClickedCallback(cb);
+}
+
+void LLPanelClassifiedInfo::setEditClassifiedCallback(const commit_callback_t& cb)
+{
+	getChild<LLButton>("edit_btn")->setClickedCallback(cb);
 }
 
 void LLPanelClassifiedInfo::reshape(S32 width, S32 height, BOOL called_from_parent /* = TRUE */)
@@ -151,7 +177,7 @@ void LLPanelClassifiedInfo::onOpen(const LLSD& key)
 	LLUUID avatar_id = key["classified_creator_id"];
 	if(avatar_id.isNull())
 	{
-		return;
+		//return;
 	}
 
 	if(getAvatarId().notNull())
@@ -253,6 +279,10 @@ void LLPanelClassifiedInfo::processProperties(void* data, EAvatarProcessorType t
 			std::string date_str = date_fmt;
 			LLStringUtil::format(date_str, LLSD().with("datetime", (S32) c_info->creation_date));
 			getChild<LLUICtrl>("creation_date")->setValue(date_str);
+
+			date_str = date_fmt;
+			LLStringUtil::format(date_str, LLSD().with("datetime", (S32) c_info->expiration_date));
+			getChild<LLUICtrl>("expiration_date")->setValue(date_str);
 
 			setInfoLoaded(true);
 
@@ -559,6 +589,12 @@ void LLPanelClassifiedInfo::onTeleportClick()
 		gAgent.teleportViaLocation(getPosGlobal());
 		LLFloaterWorldMap::getInstance()->trackLocation(getPosGlobal());
 	}
+}
+
+void LLPanelClassifiedInfo::onExit()
+{
+	LLAvatarPropertiesProcessor::getInstance()->removeObserver(getAvatarId(), this);
+	gGenericDispatcher.addHandler("classifiedclickthrough", nullptr); // deregister our handler
 }
 
 //EOF

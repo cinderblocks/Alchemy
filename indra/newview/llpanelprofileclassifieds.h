@@ -28,7 +28,6 @@
 #define LL_PANELPROFILECLASSIFIEDS_H
 
 #include "llavatarpropertiesprocessor.h"
-#include "llclassifiedinfo.h"
 #include "llfloater.h"
 #include "llpanel.h"
 #include "llpanelavatar.h"
@@ -39,6 +38,7 @@
 #include "lleventcoro.h"
 
 class LLCheckBoxCtrl;
+class LLFloaterPublishClassified;
 class LLLineEditor;
 class LLMediaCtrl;
 class LLScrollContainer;
@@ -46,23 +46,6 @@ class LLTabContainer;
 class LLTextEditor;
 class LLTextureCtrl;
 class LLUICtrl;
-
-
-class LLPublishClassifiedFloater final : public LLFloater
-{
-public:
-    LLPublishClassifiedFloater(const LLSD& key);
-    virtual ~LLPublishClassifiedFloater();
-
-    /*virtual*/ BOOL postBuild();
-
-    void setPrice(S32 price);
-    S32 getPrice();
-
-    void setPublishClickedCallback(const commit_signal_t::slot_type& cb);
-    void setCancelClickedCallback(const commit_signal_t::slot_type& cb);
-};
-
 
 /**
 * Panel for displaying Avatar's picks.
@@ -371,7 +354,7 @@ private:
     bool mCanClose;
     bool mEditOnLoad;
 
-    LLPublishClassifiedFloater* mPublishFloater;
+    LLFloaterPublishClassified* mPublishFloater;
 };
 
 #endif // LL_PANELPROFILECLASSIFIEDS_H

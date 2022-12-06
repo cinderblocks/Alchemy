@@ -148,8 +148,6 @@ protected:
 
 	void onClickBack();
 
-protected:
-
 	S32						mScrollingPanelMinHeight;
 	S32						mScrollingPanelWidth;
 	LLScrollContainer*		mScrollContainer;
@@ -206,14 +204,14 @@ public:
 
 	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
 
-protected:
-
-	LLPanelPickEdit();
-
 	/**
 	 * Sends Pick properties to server.
 	 */
 	void sendUpdate();
+
+protected:
+
+	LLPanelPickEdit();
 
 	/**
 	 * Called when snapshot image changes.
@@ -243,8 +241,6 @@ protected:
 	void onClickSave();
 
 	std::string getLocationNotice();
-
-protected:
 
 	bool mLocationChanged;
 	bool mNeedData;

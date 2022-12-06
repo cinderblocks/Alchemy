@@ -353,6 +353,7 @@ LLPanelPickEdit::LLPanelPickEdit()
  , mLocationChanged(false)
  , mNeedData(true)
  , mNewPick(false)
+ , text_icon(nullptr)
 {
 }
 
@@ -486,8 +487,6 @@ BOOL LLPanelPickEdit::isDirty() const
 	}
 	return FALSE;
 }
-
-// PROTECTED AREA
 
 void LLPanelPickEdit::sendUpdate()
 {

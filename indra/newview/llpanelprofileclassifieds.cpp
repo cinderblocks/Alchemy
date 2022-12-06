@@ -32,10 +32,12 @@
 #include "llavataractions.h"
 #include "llavatarpropertiesprocessor.h"
 #include "llclassifiedflags.h"
+#include "llclassifiedinfo.h"
 #include "llcombobox.h"
 #include "llcommandhandler.h" // for classified HTML detail page click tracking
 #include "llcorehttputil.h"
 #include "lldispatcher.h"
+#include "llfloaterpublishclassified.h"
 #include "llfloaterreg.h"
 #include "llfloatersidepanelcontainer.h"
 #include "llfloaterworldmap.h"
@@ -45,7 +47,6 @@
 #include "llnotificationsutil.h"
 #include "llpanelavatar.h"
 #include "llparcel.h"
-#include "llregistry.h"
 #include "llscrollcontainer.h"
 #include "llstartup.h"
 #include "llstatusbar.h"
@@ -56,16 +57,11 @@
 #include "llviewergenericmessage.h" // send_generic_message
 #include "llviewerparcelmgr.h"
 #include "llviewerregion.h"
-#include "llviewertexture.h"
-#include "llviewertexture.h"
 #include "rlvactions.h"
 #include "rlvhandler.h"
 
 
 //*TODO: verify this limit
-const S32 MAX_AVATAR_CLASSIFIEDS = 100;
-
-const S32 MINIMUM_PRICE_FOR_LISTING = 50; // L$
 const S32 DEFAULT_EDIT_CLASSIFIED_SCROLL_HEIGHT = 530;
 
 //static
@@ -73,120 +69,6 @@ LLPanelProfileClassified::panel_list_t LLPanelProfileClassified::sAllPanels;
 
 static LLPanelInjector<LLPanelProfileClassifieds> t_panel_profile_classifieds("panel_profile_classifieds");
 static LLPanelInjector<LLPanelProfileClassified> t_panel_profile_classified("panel_profile_classified");
-
-class LLClassifiedHandler : public LLCommandHandler, public LLAvatarPropertiesObserver
-{
-public:
-    // throttle calls from untrusted browsers
-    LLClassifiedHandler() : LLCommandHandler("classified", UNTRUSTED_THROTTLE) {}
-	
-	std::set<LLUUID> mClassifiedIds;
-	std::string mRequestVerb;
-    
-	bool handle(const LLSD& params, const LLSD& query_map, LLMediaCtrl* web)
-    {
-        if (LLStartUp::getStartupState() < STATE_STARTED)
-        {
-            return true;
-        }
-
-        if (!LLUI::getInstanceFast()->mSettingGroups["config"]->getBOOL("EnableClassifieds"))
-        {
-            LLNotificationsUtil::add("NoClassifieds", LLSD(), LLSD(), std::string("SwitchToStandardSkinAndQuit"));
-            return true;
-        }
-
-        // handle app/classified/create urls first
-        if (params.size() == 1 && params[0].asString() == "create")
-        {
-            LLAvatarActions::showClassifieds(gAgent.getID());
-            return true;
-        }
-
-        // then handle the general app/classified/{UUID}/{CMD} urls
-        if (params.size() < 2)
-        {
-            return false;
-        }
-
-        // get the ID for the classified
-        LLUUID classified_id;
-        if (!classified_id.set(params[0].asStringRef(), FALSE))
-        {
-            return false;
-        }
-
-        // show the classified in the side tray.
-        // need to ask the server for more info first though...
-        const std::string verb = params[1].asString();
-        if (verb == "about")
-        {
-            mRequestVerb = verb;
-            mClassifiedIds.insert(classified_id);
-            LLAvatarPropertiesProcessor::getInstanceFast()->addObserver(LLUUID(), this);
-            LLAvatarPropertiesProcessor::getInstanceFast()->sendClassifiedInfoRequest(classified_id);
-            return true;
-        }
-        else if (verb == "edit")
-        {
-            LLAvatarActions::showClassified(gAgent.getID(), classified_id, true);
-            return true;
-        }
-
-        return false;
-    }
-
-    void openClassified(LLAvatarClassifiedInfo* c_info)
-    {
-        if (mRequestVerb == "about")
-        {
-            if (c_info->creator_id == gAgent.getID())
-            {
-                LLAvatarActions::showClassified(gAgent.getID(), c_info->classified_id, false);
-            }
-            else
-            {
-                LLSD params;
-                params["id"] = c_info->creator_id;
-                params["open_tab_name"] = "panel_picks";
-                params["show_tab_panel"] = "classified_details";
-                params["classified_id"] = c_info->classified_id;
-                params["classified_creator_id"] = c_info->creator_id;
-                params["classified_snapshot_id"] = c_info->snapshot_id;
-                params["classified_name"] = c_info->name;
-                params["classified_desc"] = c_info->description;
-                params["from_search"] = true;
-                LLFloaterSidePanelContainer::showPanel("picks", params);
-            }
-        }
-    }
-
-    void processProperties(void* data, EAvatarProcessorType type)
-    {
-        if (APT_CLASSIFIED_INFO != type)
-        {
-            return;
-        }
-
-        // is this the classified that we asked for?
-        LLAvatarClassifiedInfo* c_info = static_cast<LLAvatarClassifiedInfo*>(data);
-        if (!c_info || mClassifiedIds.find(c_info->classified_id) == mClassifiedIds.end())
-        {
-            return;
-        }
-
-        // open the detail side tray for this classified
-        openClassified(c_info);
-
-        // remove our observer now that we're done
-        mClassifiedIds.erase(c_info->classified_id);
-        LLAvatarPropertiesProcessor::getInstanceFast()->removeObserver(LLUUID(), this);
-    }
-};
-LLClassifiedHandler gClassifiedHandler;
-
-//////////////////////////////////////////////////////////////////////////
-
 
 //-----------------------------------------------------------------------------
 // LLPanelProfileClassifieds
@@ -427,7 +309,7 @@ void LLPanelProfileClassifieds::updateData()
 
 bool LLPanelProfileClassifieds::canAddNewClassified()
 {
-    return (mTabContainer->getTabCount() < MAX_AVATAR_CLASSIFIEDS) && RlvActions::canShowLocation();
+    return (mTabContainer->getTabCount() < MAX_CLASSIFIEDS) && RlvActions::canShowLocation();
 }
 
 bool LLPanelProfileClassifieds::canDeleteClassified()
@@ -582,7 +464,7 @@ BOOL LLPanelProfileClassified::postBuild()
     LLClassifiedInfo::cat_map::iterator iter;
     for (iter = LLClassifiedInfo::sCategories.begin();
         iter != LLClassifiedInfo::sCategories.end();
-        iter++)
+        ++iter)
     {
         mCategoryCombo->add(LLTrans::getString(iter->second));
     }
@@ -824,7 +706,7 @@ void LLPanelProfileClassified::resetControls()
     mCategoryCombo->setCurrentByIndex(0);
     mContentTypeCombo->setCurrentByIndex(0);
     mAutoRenewEdit->setValue(false);
-    mPriceForListing = MINIMUM_PRICE_FOR_LISTING;
+    mPriceForListing = MINIMUM_PRICE_FOR_CLASSIFIED_LISTING;
 }
 
 void LLPanelProfileClassified::onEditClick()
@@ -842,7 +724,7 @@ void LLPanelProfileClassified::onCancelClick()
         mCategoryCombo->setCurrentByIndex(0);
         mContentTypeCombo->setCurrentByIndex(0);
         mAutoRenewEdit->setValue(false);
-        mPriceForListing = MINIMUM_PRICE_FOR_LISTING;
+        mPriceForListing = MINIMUM_PRICE_FOR_CLASSIFIED_LISTING;
     }
     else
     {
@@ -872,12 +754,12 @@ void LLPanelProfileClassified::onSaveClick()
             return;
         }
 
-        mPublishFloater = LLFloaterReg::findTypedInstance<LLPublishClassifiedFloater>(
+        mPublishFloater = LLFloaterReg::findTypedInstance<LLFloaterPublishClassified>(
             "publish_classified", LLSD());
 
         if(!mPublishFloater)
         {
-            mPublishFloater = LLFloaterReg::getTypedInstance<LLPublishClassifiedFloater>(
+            mPublishFloater = LLFloaterReg::getTypedInstance<LLFloaterPublishClassified>(
                 "publish_classified", LLSD());
 
             mPublishFloater->setPublishClickedCallback(boost::bind
@@ -932,7 +814,7 @@ void LLPanelProfileClassified::resetData()
     mMapClicksNew       = 0;
     mProfileClicksNew   = 0;
 
-    mPriceForListing = MINIMUM_PRICE_FOR_LISTING;
+    mPriceForListing = MINIMUM_PRICE_FOR_CLASSIFIED_LISTING;
 
     mCategoryText->setValue(LLStringUtil::null);
     mContentTypeText->setValue(LLStringUtil::null);
@@ -1402,48 +1284,4 @@ void LLPanelProfileClassified::updateTabLabel(const std::string& title)
     {
         parent->setCurrentTabName(title);
     }
-}
-
-
-//-----------------------------------------------------------------------------
-// LLPublishClassifiedFloater
-//-----------------------------------------------------------------------------
-
-LLPublishClassifiedFloater::LLPublishClassifiedFloater(const LLSD& key)
- : LLFloater(key)
-{
-}
-
-LLPublishClassifiedFloater::~LLPublishClassifiedFloater()
-{
-}
-
-BOOL LLPublishClassifiedFloater::postBuild()
-{
-    LLFloater::postBuild();
-
-    childSetAction("publish_btn", boost::bind(&LLFloater::closeFloater, this, false));
-    childSetAction("cancel_btn", boost::bind(&LLFloater::closeFloater, this, false));
-
-    return TRUE;
-}
-
-void LLPublishClassifiedFloater::setPrice(S32 price)
-{
-    getChild<LLUICtrl>("price_for_listing")->setValue(price);
-}
-
-S32 LLPublishClassifiedFloater::getPrice()
-{
-    return getChild<LLUICtrl>("price_for_listing")->getValue().asInteger();
-}
-
-void LLPublishClassifiedFloater::setPublishClickedCallback(const commit_signal_t::slot_type& cb)
-{
-    getChild<LLButton>("publish_btn")->setClickedCallback(cb);
-}
-
-void LLPublishClassifiedFloater::setCancelClickedCallback(const commit_signal_t::slot_type& cb)
-{
-    getChild<LLButton>("cancel_btn")->setClickedCallback(cb);
 }

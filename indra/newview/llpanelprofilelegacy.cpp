@@ -58,11 +58,10 @@
 #include "llfloaterworldmap.h"
 #include "llgroupactions.h"
 #include "llpanelclassified.h"
+#include "llpanelclassifiededit.h"
 #include "llpanelpick.h"
-#if WIP_PROFILES
-#include "llpanelpicks.h"
+#include "llpanelprofilelegacypicks.h"
 #include "llpickitem.h"
-#endif
 #include "llmutelist.h"
 #include "llsidetraypanelcontainer.h"
 #include "llslurl.h"
@@ -75,15 +74,11 @@ static const std::array<std::string, 6> sSkillsCheckboxes{{"can_texture", "can_a
 
 static LLPanelInjector<LLPanelProfileLegacy> t_panel_lprofile("panel_profile_legacy_sidetray");
 static LLPanelInjector<LLPanelProfileLegacy::LLPanelProfileGroups> t_panel_group("panel_profile_legacy_groups");
-#if WIP_PROFILES
 static LLPanelInjector<LLPanelProfileLegacy::LLPanelProfilePicks> t_panel_picks("panel_profile_legacy_picks");
-#endif
 
 LLPanelProfileLegacy::LLPanelProfileLegacy()
 :	LLPanelProfileLegacyTab()
-#if WIP_PROFILES
 ,	mPanelPicks(nullptr)
-#endif
 ,	mPanelGroups(nullptr)
 {
 	mChildStack.setParent(this);
@@ -110,10 +105,8 @@ LLPanelProfileLegacy::~LLPanelProfileLegacy()
 BOOL LLPanelProfileLegacy::postBuild()
 {
 	mPanelGroups = static_cast<LLPanelProfileGroups*>(getChild<LLUICtrl>("groups_tab_panel"));
-#if WIP_PROFILES
 	mPanelPicks = static_cast<LLPanelProfilePicks*>(getChild<LLUICtrl>("picks_tab_panel"));
 	mPanelPicks->setProfilePanel(this);
-#endif
 	
 	if (dynamic_cast<LLSideTrayPanelContainer*>(getParent()) != nullptr)
 		getChild<LLUICtrl>("back")->setCommitCallback(boost::bind(&LLPanelProfileLegacy::onBackBtnClick, this));
@@ -159,9 +152,7 @@ void LLPanelProfileLegacy::onOpen(const LLSD& key)
 	setAvatarId(av_id);
 	
 	mPanelGroups->onOpen(LLSD(av_id));
-#if WIP_PROFILES
 	mPanelPicks->onOpen(LLSD(av_id));
-#endif
 	// Oh joy!
 	bool is_self = (getAvatarId() == gAgentID);
 	getChild<LLView>("sl_profile_pic")->setEnabled(is_self);
@@ -375,7 +366,7 @@ void LLPanelProfileLegacy::onCommitAction(const LLSD& userdata)
 
 void LLPanelProfileLegacy::copyData(const LLSD& userdata)
 {
-#if WIP_PROFILES
+#if 0
     const std::string& param = userdata.asString();
 	if (param == "copy_name")
 		LLAvatarActions::copyData(getAvatarId(), LLAvatarActions::E_DATA_NAME);
@@ -581,7 +572,6 @@ void LLPanelProfileLegacy::closePanel(LLPanel* panel)
 }
 
 // LLPanelProfilePicks //
-#if WIP_PROFILES
 LLPanelProfileLegacy::LLPanelProfilePicks::LLPanelProfilePicks()
 :	LLPanelProfileLegacyTab()
 ,	mProfilePanel(nullptr)
@@ -798,8 +788,8 @@ void LLPanelProfileLegacy::LLPanelProfilePicks::onClickTeleport()
 	else if (c_item)
 	{
 		pos = c_item->getPosGlobal();
-		LLPanelClassifiedInfo::sendClickMessage("teleport", false,
-												c_item->getClassifiedId(), LLUUID::null, pos, LLStringUtil::null);
+        LLPanelClassifiedInfo::sendClickMessage("teleport", false, 
+			c_item->getClassifiedId(), LLUUID::null, pos, LLStringUtil::null);
 	}
 	
 	if (!pos.isExactlyZero())
@@ -821,8 +811,8 @@ void LLPanelProfileLegacy::LLPanelProfilePicks::onClickShowOnMap()
 	}
 	else if (c_item)
 	{
-		LLPanelClassifiedInfo::sendClickMessage("map", false,
-												c_item->getClassifiedId(), LLUUID::null, pos, LLStringUtil::null);
+        LLPanelClassifiedInfo::sendClickMessage("map", false,
+			c_item->getClassifiedId(), LLUUID::null, pos, LLStringUtil::null);
 		pos = c_item->getPosGlobal();
 	}
 	
@@ -926,7 +916,7 @@ void LLPanelProfileLegacy::LLPanelProfilePicks::openClassifiedInfo()
 	
 	if (!mPanelClassifiedInfo)
 	{
-		mPanelClassifiedInfo = LLPanelClassifiedInfo::create();
+        mPanelClassifiedInfo = LLPanelClassifiedInfo::create();
 		mPanelClassifiedInfo->setExitCallback(boost::bind(&LLPanelProfilePicks::onPanelClassifiedClose, this, mPanelClassifiedInfo));
 		mPanelClassifiedInfo->setVisible(FALSE);
 	}
@@ -1212,7 +1202,6 @@ inline LLPanelProfileLegacy* LLPanelProfileLegacy::LLPanelProfilePicks::getProfi
 	llassert_always(mProfilePanel != nullptr);
 	return mProfilePanel;
 }
-#endif
 
 // LLPanelProfileGroups //
 

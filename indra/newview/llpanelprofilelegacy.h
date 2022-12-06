@@ -33,9 +33,7 @@
 
 #include "llgroupmgr.h"
 #include "llpanelavatarlegacy.h"
-#if WIP_PROFILES
 #include "llclassifieditem.h"
-#endif
 
 class LLAvatarName;
 class LLFlatListView;
@@ -51,7 +49,8 @@ class LLToggleableMenu;
 
 class LLPanelProfileLegacy final : public LLPanelProfileLegacyTab
 {
-public:
+    friend class LLPanelProfileLegacyPicks;
+  public:
 	LLPanelProfileLegacy();
 	BOOL postBuild() override;
 	void onOpen(const LLSD& key) override;
@@ -111,7 +110,6 @@ private:
 	ChildStack		mChildStack;
 	
 public:
-#if WIP_PROFILES
 	class LLPanelProfilePicks final : public LLPanelProfileLegacyTab
 	{
 		friend class LLPanelProfileLegacy;
@@ -169,7 +167,7 @@ public:
 		LLFlatListView* mPicksList;
 		LLPanelPickEdit* mPanelPickEdit;
 		LLPanelPickInfo* mPanelPickInfo;
-		LLPanelClassifiedInfo* mPanelClassifiedInfo;
+        LLPanelClassifiedInfo* mPanelClassifiedInfo;
 		LLHandle<LLView> mPopupMenuHandle;
 		LLHandle<LLToggleableMenu> mPlusMenuHandle;
 
@@ -177,7 +175,6 @@ public:
 		// sit in this map and listen to LLPanelClassifiedEdit::processProperties callback.
 		panel_classified_edit_map_t mEditClassifiedPanels;
 	};
-#endif
 	
 	class LLPanelProfileGroups final : public LLPanelProfileLegacyTab
 	{
@@ -200,9 +197,7 @@ public:
 	};
 	
 private:
-#if WIP_PROFILES
 	LLPanelProfilePicks* mPanelPicks;
-#endif
 	LLPanelProfileGroups* mPanelGroups;
 };
 

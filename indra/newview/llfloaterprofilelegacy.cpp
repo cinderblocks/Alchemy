@@ -33,6 +33,7 @@
 
 #include "llavatarname.h"
 #include "llavatarnamecache.h"
+#include "llpanelprofilelegacy.h"
 
 LLFloaterProfileLegacy::LLFloaterProfileLegacy(LLSD const& key)
 :	LLFloater(key)
@@ -48,6 +49,7 @@ LLFloaterProfileLegacy::~LLFloaterProfileLegacy()
 
 BOOL LLFloaterProfileLegacy::postBuild()
 {
+    mPanel = static_cast<LLPanelProfileLegacy*>(getChild<LLPanel>("panel_profile_legacy_sidetray"));
 	return TRUE;
 }
 
@@ -59,8 +61,19 @@ void LLFloaterProfileLegacy::onOpen(const LLSD& key)
 	mAvatarNameCacheConnection = LLAvatarNameCache::get(av_id,
 		boost::bind(&LLFloaterProfileLegacy::onAvatarNameCache, this, _1, _2));
 
-	getChild<LLPanel>("panel_profile_legacy_sidetray")->onOpen(key);
+	mPanel->onOpen(key);
 }
+
+void LLFloaterProfileLegacy::openTab(std::string_view tab_name) const
+{
+    mPanel->openTab(tab_name);
+}
+
+std::string_view LLFloaterProfileLegacy::currentTab() const
+{
+    return mPanel->currentTab();
+}
+
 
 void LLFloaterProfileLegacy::onAvatarNameCache(const LLUUID& agent_id, const LLAvatarName& av_name)
 {

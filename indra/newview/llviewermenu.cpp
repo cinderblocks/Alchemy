@@ -3616,13 +3616,8 @@ void handle_avatar_eject(const LLSD& avatar_id)
 
 bool my_profile_visible()
 {
-	LLFloater* floaterp = LLAvatarActions::getProfileFloater(gAgentID);
+    LLFloater* floaterp = LLAvatarActions::findProfileFloater(gAgentID);
 	return floaterp && floaterp->isInVisibleChain();
-}
-
-bool picks_tab_visible()
-{
-    return my_profile_visible() && LLAvatarActions::isPickTabSelected(gAgentID);
 }
 
 bool enable_freeze_eject(const LLSD& avatar_id)
@@ -6344,7 +6339,7 @@ class LLAvatarToggleMyProfile : public view_listener_t
 {
 	bool handleEvent(const LLSD& userdata)
 	{
-		LLFloater* instance = LLAvatarActions::getProfileFloater(gAgent.getID());
+		LLFloater* instance = LLAvatarActions::findProfileFloater(gAgent.getID());
 		if (LLFloater::isMinimized(instance))
 		{
 			instance->setMinimized(FALSE);
@@ -6396,16 +6391,12 @@ class LLAvatarTogglePicks : public view_listener_t
 {
     bool handleEvent(const LLSD& userdata)
     {
-        LLFloater* instance = LLAvatarActions::getProfileFloater(gAgent.getID());
+        LLFloater* instance = LLAvatarActions::findProfileFloater(gAgent.getID());
         if (LLFloater::isMinimized(instance) || (instance && !instance->hasFocus() && !instance->getIsChrome()))
         {
             instance->setMinimized(FALSE);
             instance->setFocus(TRUE);
             LLAvatarActions::showPicks(gAgent.getID());
-        }
-        else if (picks_tab_visible())
-        {
-            instance->closeFloater();
         }
         else
         {
@@ -9837,7 +9828,6 @@ void initialize_menus()
 	view_listener_t::addMenu(new LLAvatarEnableResetSkeleton(), "Avatar.EnableResetSkeleton");
 	view_listener_t::addMenu(new LLAvatarResetSkeletonAndAnimations(), "Avatar.ResetSkeletonAndAnimations");
 	enable.add("Avatar.IsMyProfileOpen", boost::bind(&my_profile_visible));
-    enable.add("Avatar.IsPicksTabOpen", boost::bind(&picks_tab_visible));
 
 	commit.add("Avatar.OpenMarketplace", boost::bind(&LLWeb::loadURLExternal, gSavedSettings.getString("MarketplaceURL")));
 	

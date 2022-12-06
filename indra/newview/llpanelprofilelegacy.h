@@ -35,6 +35,7 @@
 #include "llpanelavatarlegacy.h"
 #include "llclassifieditem.h"
 
+class LLAccordionCtrl;
 class LLAvatarName;
 class LLFlatListView;
 class LLPanel;
@@ -55,7 +56,9 @@ class LLPanelProfileLegacy final : public LLPanelProfileLegacyTab
 	BOOL postBuild() override;
 	void onOpen(const LLSD& key) override;
 	void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE) override;
-	
+    void openTab(std::string_view tab_name);
+    std::string_view currentTab() const;
+
 protected:
 	void openPanel(LLPanel* panel, const LLSD& params);
 	void closePanel(LLPanel* panel);
@@ -81,7 +84,8 @@ private:
 	bool isActionEnabled(const LLSD& userdata);
 	bool handleConfirmModifyRightsCallback(const LLSD& notification, const LLSD& response);
 	void closeParentFloater();
-	
+
+	LLAccordionCtrl* mAccordion;
 	boost::signals2::connection mAvatarNameCacheConnection;
 	boost::signals2::connection mNameChangedConnection;
 	

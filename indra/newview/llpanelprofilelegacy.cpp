@@ -104,6 +104,7 @@ LLPanelProfileLegacy::~LLPanelProfileLegacy()
 // virtual
 BOOL LLPanelProfileLegacy::postBuild()
 {
+    mAccordion = getChild<LLAccordionCtrl>("avatar_accordion");
 	mPanelGroups = static_cast<LLPanelProfileGroups*>(getChild<LLUICtrl>("groups_tab_panel"));
 	mPanelPicks = static_cast<LLPanelProfilePicks*>(getChild<LLUICtrl>("picks_tab_panel"));
 	mPanelPicks->setProfilePanel(this);
@@ -130,6 +131,17 @@ void LLPanelProfileLegacy::reshape(S32 width, S32 height, BOOL called_from_paren
 	mChildStack.preParentReshape();
 	LLPanel::reshape(width, height, called_from_parent);
 	mChildStack.postParentReshape();
+}
+
+void LLPanelProfileLegacy::openTab(std::string_view tab_name)
+{
+    mAccordion->expandTab(tab_name);
+}
+
+std::string_view LLPanelProfileLegacy::currentTab() const
+{
+	const LLAccordionCtrlTab* tab = mAccordion->getExpandedTab();
+    return tab->getTitle();
 }
 
 // virtual
@@ -176,7 +188,7 @@ void LLPanelProfileLegacy::onOpen(const LLSD& key)
 	updateData();
 	resetControls();
 	
-	getChild<LLAccordionCtrl>("avatar_accordion")->expandDefaultTab();
+	mAccordion->expandDefaultTab();
 }
 
 void LLPanelProfileLegacy::resetControls()
@@ -325,7 +337,7 @@ void LLPanelProfileLegacy::showAccordion(const std::string& name, bool show)
 {
 	LLAccordionCtrlTab* tab = getChild<LLAccordionCtrlTab>(name);
 	tab->setVisible(show);
-	getChild<LLAccordionCtrl>("avatar_accordion")->arrange();
+	mAccordion->arrange();
 }
 
 void LLPanelProfileLegacy::onCommitAction(const LLSD& userdata)

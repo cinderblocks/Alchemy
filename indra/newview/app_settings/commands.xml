@@ -196,7 +196,6 @@
            label_ref="Command_Picks_Label"
            tooltip_ref="Command_Picks_Tooltip"
            execute_function="Avatar.TogglePicks"
-           is_running_function="Avatar.IsPicksTabOpen"
            />
   <command name="places"
            available_in_toybox="true"

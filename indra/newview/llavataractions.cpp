@@ -48,6 +48,7 @@
 #include "llfloatergroups.h"
 #include "llfloaterreg.h"
 #include "llfloaterpay.h"
+#include "llfloaterprofilelegacy.h"
 #include "llfloaterprofile.h"
 #include "llfloatersidepanelcontainer.h"
 #include "llfloaterwebcontent.h"
@@ -365,7 +366,8 @@ void LLAvatarActions::showProfile(const LLUUID& avatar_id)
 {
 	if (avatar_id.notNull())
 	{
-		LLFloaterReg::showInstance("profile", LLSD().with("id", avatar_id));
+        LLFloaterReg::showTypedInstance<LLFloaterProfileLegacy>("legacy_profile", 
+			LLSD().with("avatar_id", avatar_id), TAKE_FOCUS_YES);
 	}
 }
 
@@ -374,81 +376,24 @@ void LLAvatarActions::showPicks(const LLUUID& avatar_id)
 {
 	if (avatar_id.notNull())
 	{
-        LLFloaterProfile* profilefloater = dynamic_cast<LLFloaterProfile*>(LLFloaterReg::showInstance("profile", LLSD().with("id", avatar_id)));
-        if (profilefloater)
-        {
-            profilefloater->showPick();
-        }
-	}
-}
-
-// static
-void LLAvatarActions::showPick(const LLUUID& avatar_id, const LLUUID& pick_id)
-{
-	if (avatar_id.notNull())
-	{
-        LLFloaterProfile* profilefloater = dynamic_cast<LLFloaterProfile*>(LLFloaterReg::showInstance("profile", LLSD().with("id", avatar_id)));
-        if (profilefloater)
-        {
-            profilefloater->showPick(pick_id);
-        }
-	}
-}
-
-// static
-bool LLAvatarActions::isPickTabSelected(const LLUUID& avatar_id)
-{
-    if (avatar_id.notNull())
-    {
-        LLFloaterProfile* profilefloater = LLFloaterReg::findTypedInstance<LLFloaterProfile>("profile", LLSD().with("id", avatar_id));
-        if (profilefloater)
-        {
-            return profilefloater->isPickTabSelected();
-        }
-    }
-    return false;
-}
-
-// static
-void LLAvatarActions::showClassifieds(const LLUUID& avatar_id)
-{
-	if (avatar_id.notNull())
-	{
-        LLFloaterProfile* profilefloater = dynamic_cast<LLFloaterProfile*>(LLFloaterReg::showInstance("profile", LLSD().with("id", avatar_id)));
-        if (profilefloater)
-        {
-            profilefloater->showClassified();
-        }
-	}
-}
-
-// static
-void LLAvatarActions::showClassified(const LLUUID& avatar_id, const LLUUID& classified_id, bool edit)
-{
-	if (avatar_id.notNull())
-	{
-        LLFloaterProfile* profilefloater = dynamic_cast<LLFloaterProfile*>(LLFloaterReg::showInstance("profile", LLSD().with("id", avatar_id)));
-        if (profilefloater)
-        {
-            profilefloater->showClassified(classified_id, edit);
-        }
+        LLFloaterProfileLegacy* profile = LLFloaterReg::showTypedInstance<LLFloaterProfileLegacy>(
+			"legacy_profile", LLSD().with("avatar_id", avatar_id), TAKE_FOCUS_YES);
+        profile->openTab("avatar_picks_tab");
 	}
 }
 
 //static 
 bool LLAvatarActions::profileVisible(const LLUUID& avatar_id)
 {
-	LLSD sd;
-	sd["id"] = avatar_id;
-	LLFloater* floater = getProfileFloater(avatar_id);
+	LLFloater* floater = findProfileFloater(avatar_id);
 	return floater && floater->isShown();
 }
 
 //static
-LLFloater* LLAvatarActions::getProfileFloater(const LLUUID& avatar_id)
+LLFloater* LLAvatarActions::findProfileFloater(const LLUUID& avatar_id)
 {
-    LLFloaterProfile* floater = LLFloaterReg::findTypedInstance<LLFloaterProfile>("profile", LLSD().with("id", avatar_id));
-    return floater;
+    return LLFloaterReg::findTypedInstance<LLFloaterProfileLegacy>(
+		"legacy_profile", LLSD().with("avatar_id", avatar_id));
 }
 
 //static 
@@ -456,7 +401,7 @@ void LLAvatarActions::hideProfile(const LLUUID& avatar_id)
 {
 	LLSD sd;
 	sd["id"] = avatar_id;
-	LLFloater* floater = getProfileFloater(avatar_id);
+	LLFloater* floater = findProfileFloater(avatar_id);
 	if (floater)
 	{
 		floater->closeFloater();
